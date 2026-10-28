@@ -15,7 +15,7 @@ spring:
 
     # ${VARIAVEL:valorPadrao}: o Spring procura a variável de ambiente e, se achar, usa o valor real.
     # Os dois pontos ficam COLADOS na chave e nada depois deles = valor padrão VAZIO.
-    # - No seu computador: a variável existe (configurada no Run/Debug) e vale o valor real.
+    # - No InteliJ: a variável existe (configurada no Run/Debug) e vale o valor real.
     # - No GitHub Actions: ela não existe, então vira vazio e a aplicação sobe sem erro.
     # Atenção: "${MAIL_USERNAME: }" (com espaço) cria um espaço de verdade como padrão.
     # Assim a senha nunca aparece no código nem no GitHub: só o NOME da variável fica aqui.
