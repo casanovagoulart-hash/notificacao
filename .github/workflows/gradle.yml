@@ -1,31 +1,46 @@
+# Nome que aparece na aba "Actions" do GitHub
 name: PR Workflow
 
+# on: QUANDO o workflow dispara
 on:
   pull_request:
-    branches: [master]   # confira se a sua branch principal é master mesmo (ou main)
+    # Só quando o PR for para a master (confira se a principal é master ou main)
+    branches: [master]
+    # opened = PR aberto | synchronize = novo commit no PR | reopened = PR reaberto
     types: [opened, synchronize, reopened]
 
+# Permissões do token do workflow. "contents: read" = só LER o código (menor privilégio),
+# assim um workflow comprometido não consegue alterar o repositório.
 permissions:
-  contents: read   # Princípio do menor privilégio para o token do workflow
+  contents: read
 
 jobs:
+  # Nome do job (uma tarefa dentro do workflow)
   build:
+    # Máquina virtual do GitHub onde roda (Linux). Por isso o chmod abaixo é necessário.
     runs-on: ubuntu-latest
     steps:
+      # Baixa o código do repositório para a máquina
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Instala o Java 17 (o mesmo que você usa no IntelliJ)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
+      # Prepara o Gradle e guarda cache das dependências para os próximos builds ficarem mais rápidos
       - name: Set up Gradle (com cache embutido)
         uses: gradle/actions/setup-gradle@v4
 
+      # No Windows o gradlew já nasce executável; no Linux, não. Sem isso dá "Permission denied".
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      # Compila E roda os testes. Se o teste contextLoads subir a aplicação, os placeholders
+      # ${MAIL_USERNAME:} e ${MAIL_PASSWORD:} do application.yaml precisam ter valor padrão,
+      # porque aqui essas variáveis não existem.
       - name: Build and test
         run: ./gradlew build

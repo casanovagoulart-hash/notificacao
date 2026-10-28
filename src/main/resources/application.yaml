@@ -1,0 +1,67 @@
+# ===================== CONFIGURAÇÕES DO SPRING =====================
+# YAML organiza tudo por RECUO (2 espaços, nunca tab). O recuo define quem pertence a quem:
+# "mail" dentro de "spring" vira a propriedade spring.mail, igual ao .properties.
+spring:
+
+  # ---------- ENVIO DE E-MAIL (JavaMailSender) ----------
+  mail:
+    # Servidor SMTP do Gmail: é o "correio" que entrega as mensagens
+    host: smtp.gmail.com
+
+    # 587 = porta do STARTTLS: a conexão começa normal e depois é criptografada.
+    # Não misture com socketFactory na porta 465 (que é outro modo, SSL direto):
+    # as duas formas juntas brigam entre si e o envio falha.
+    port: 587
+
+    # ${VARIAVEL:valorPadrao}: o Spring procura a variável de ambiente e, se achar, usa o valor real.
+    # Os dois pontos ficam COLADOS na chave e nada depois deles = valor padrão VAZIO.
+    # - No InteliJ: a variável existe (configurada no Run/Debug) e vale o valor real.
+    # - No GitHub Actions: ela não existe, então vira vazio e a aplicação sobe sem erro.
+    # Atenção: "${MAIL_USERNAME: }" (com espaço) cria um espaço de verdade como padrão.
+    # Assim a senha nunca aparece no código nem no GitHub: só o NOME da variável fica aqui.
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+
+    # Protocolo usado para enviar: smtp (o padrão para saída de e-mail)
+    protocol: smtp
+
+    # Propriedades avançadas, repassadas direto para a biblioteca de e-mail (Jakarta Mail)
+    properties:
+      mail:
+        smtp:
+          # auth: true = o servidor exige usuário e senha para enviar
+          auth: true
+          starttls:
+            # enable: true = liga a criptografia depois da conexão (combina com a porta 587)
+            enable: true
+          # Tempos limite em milissegundos: evitam a aplicação ficar travada esperando o Gmail
+          # connectiontimeout: máximo para ABRIR a conexão (5 segundos)
+          connectiontimeout: 5000
+          # timeout: máximo esperando uma RESPOSTA do servidor (3 segundos)
+          timeout: 3000
+          # writetimeout: máximo para ENVIAR os dados (5 segundos)
+          writetimeout: 5000
+
+  # ---------- THYMELEAF (modelos de e-mail em HTML) ----------
+  # Fica dentro de "spring", no mesmo nível de "mail" (antes estava com recuo errado, dentro de mail).
+  # enabled: true = liga o motor de templates, usado para montar o HTML do e-mail
+  thymeleaf:
+    enabled: true
+
+# ===================== PROPRIEDADES PRÓPRIAS DO PROJETO =====================
+# "envio" NÃO é do Spring: é uma propriedade criada por você. Por isso fica na raiz,
+# sem recuo. O código lê com @Value("${envio.email.remetente}").
+# O nome precisa ser IGUAL ao que o código usa; se divergir, a aplicação não encontra o valor.
+envio:
+  email:
+    # Quem aparece como remetente. Usa a mesma variável do usuário, com padrão vazio
+    # (sem o ":" no fim, o build do GitHub falha com "Could not resolve placeholder").
+    remetente: ${MAIL_USERNAME:}
+    # Nome exibido ao destinatário. Aspas porque tem espaço. Sem ";" no fim: em YAML ele
+    # viraria parte do texto.
+    nomeRemetente: 'Casanova Java'
+
+# ===================== CONFIGURAÇÃO DE PORTA DO SERVIDOR =====================
+# Deve ficar na raiz (sem recuo), no mesmo nível de "spring:" e "envio:"
+server:
+  port: 8082
